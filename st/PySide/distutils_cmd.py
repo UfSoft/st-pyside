@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    st.PySide.distutils
-    ~~~~~~~~~~~~~~~~~~~
+    st.PySide.distutils_cmd
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
     This module provides a distutils command which compiles Qt `.ui` files to
     use gettext instead of Qt's `.tr()` method. As an extra feature, if a path

@@ -55,6 +55,7 @@ def install_ui_except_hook():
                     appinstance.translator
                     globals()["_"] = appinstance.translator.gettext
                 except AttributeError:
+                    # The ain't a translator instance, fake it
                     def fake_gettext(text, *args, **kwargs):
                         return text.replace('%s', '%%s') % kwargs % args
                     globals()["_"] = fake_gettext

@@ -36,6 +36,8 @@ def install_core_except_hook():
             log.info("KeyboardInterrupt caught. Exiting...")
             from PySide.QtCore import QCoreApplication
             QCoreApplication.instance().quit()
+            return
+        log.exception(''.join(traceback.format_exception(exctype, value, tb)))
 
     sys.__original_excepthook = sys.excepthook
     sys.excepthook = custom_except_hook
@@ -145,7 +147,7 @@ Version: %(version)s
     sys.__original_excepthook = sys.excepthook
     sys.excepthook = custom_except_hook
     # Restore original except hook just before exiting
-    QtGui.qApp.aboutToQuit.connect(restore_original_except_hook)
+    QtCore.QCoreApplication.instance().aboutToQuit.connect(restore_original_except_hook)
 
 def restore_original_except_hook():
     log.info("Restoring original except hook...")

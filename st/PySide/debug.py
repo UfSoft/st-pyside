@@ -13,6 +13,8 @@ import traceback
 
 log = logging.getLogger(__name__)
 
+sys.__original_excepthook = None
+
 # Taken from http://bzimmer.ziclix.com/2008/12/17/python-thread-dumps/
 def stacktraces():
     code = []
@@ -27,13 +29,18 @@ def stacktraces():
 
 
 def install_core_except_hook():
+    from PySide import QtCore
+    log.info("Installing custom core except hook...")
     def custom_except_hook(exctype, value, tb):
         if isinstance(value, KeyboardInterrupt):
             log.info("KeyboardInterrupt caught. Exiting...")
             from PySide.QtCore import QCoreApplication
             QCoreApplication.instance().quit()
 
+    sys.__original_excepthook = sys.excepthook
     sys.excepthook = custom_except_hook
+    # Restore original except hook just before exiting
+    QtCore.QCoreApplication.instance().aboutToQuit.connect(restore_original_except_hook)
 
 
 
@@ -50,7 +57,7 @@ def install_ui_except_hook():
             try:
                 _("")
             except (TypeError, NameError):
-                # _ is not globaly available
+                # _ is not globally available
                 try:
                     appinstance.translator
                     globals()["_"] = appinstance.translator.gettext
@@ -121,6 +128,8 @@ Version: %(version)s
             QtGui.QDesktopServices.openUrl(url)
             QtGui.QDialog.accept(self)
 
+    log.info("Installing custom ui except hook...")
+
     def custom_except_hook(exctype, value, tb):
         if isinstance(value, KeyboardInterrupt):
             log.info("KeyboardInterrupt caught. Exiting...")
@@ -133,4 +142,12 @@ Version: %(version)s
         dialog = ErrorReportDialog(None, s)
         dialog.exec_()
 
+    sys.__original_excepthook = sys.excepthook
     sys.excepthook = custom_except_hook
+    # Restore original except hook just before exiting
+    QtGui.qApp.aboutToQuit.connect(restore_original_except_hook)
+
+def restore_original_except_hook():
+    log.info("Restoring original except hook...")
+    sys.excepthook = sys.__original_excepthook
+    sys.__original_excepthook = None
